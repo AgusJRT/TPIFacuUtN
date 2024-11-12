@@ -1,0 +1,72 @@
+-- Crear base de datos
+
+CREATE DATABASE CarrefourDB;
+USE CarrefourDB;
+
+CREATE TABLE Productos (
+    producto_id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10, 2) NOT NULL,
+    stock INT NOT NULL
+);
+
+CREATE TABLE Clientes (
+    cliente_id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    telefono VARCHAR(15)
+);
+
+CREATE TABLE Ventas (
+    venta_id INT PRIMARY KEY AUTO_INCREMENT,
+    cliente_id INT,
+    fecha_venta DATE NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id)
+);
+
+CREATE TABLE Detalles_Ventas (
+    detalle_id INT PRIMARY KEY AUTO_INCREMENT,
+    venta_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    cantidad INT NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (venta_id) REFERENCES Ventas(venta_id),
+    FOREIGN KEY (producto_id) REFERENCES Productos(producto_id)
+);
+
+-- Ver cliente creado
+SELECT * FROM Clientes;
+
+-- Ver productos creados
+SELECT * FROM Productos;
+
+-- Ver venta con detalles
+SELECT v.venta_id, c.nombre as cliente, v.fecha_venta, v.total,
+       p.nombre as producto, dv.cantidad, dv.subtotal
+FROM Ventas v
+JOIN Clientes c ON v.cliente_id = c.cliente_id
+JOIN Detalles_Ventas dv ON v.venta_id = dv.venta_id
+JOIN Productos p ON dv.producto_id = p.producto_id
+ORDER BY v.venta_id, p.nombre;
+
+-- Eliminar registros usando las claves primarias
+DELETE FROM Detalles_Ventas WHERE detalle_id > 0;
+DELETE FROM Ventas WHERE venta_id > 0;
+DELETE FROM Productos WHERE producto_id > 0;
+DELETE FROM Clientes WHERE cliente_id > 0;
+
+-- Reiniciar los auto-incrementales
+ALTER TABLE Detalles_Ventas AUTO_INCREMENT = 1;
+ALTER TABLE Ventas AUTO_INCREMENT = 1;
+ALTER TABLE Productos AUTO_INCREMENT = 1;
+ALTER TABLE Clientes AUTO_INCREMENT = 1;
+
+SELECT 'Clientes' as tabla, COUNT(*) as registros FROM Clientes
+UNION
+SELECT 'Productos', COUNT(*) FROM Productos
+UNION
+SELECT 'Ventas', COUNT(*) FROM Ventas
+UNION
+SELECT 'Detalles_Ventas', COUNT(*) FROM Detalles_Ventas;
